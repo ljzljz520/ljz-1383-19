@@ -23,3 +23,9 @@ __pycache__/
 *.log
 .env
 .env.*
+
+# 岗位简历工作流运行时数据（岗位/文档/分享/回执、密钥、PDF 工件与快照）
+resume-data/db.json
+resume-data/secret.key
+resume-data/artifacts/
+resume-data/snapshots/

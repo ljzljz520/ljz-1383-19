@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岗位简历工作台 | 灵墨创意</title>
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/resume.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header class="scrolled glass"><div class="container">
+  <nav>
+    <a href="index.html" class="logo">灵墨创意</a>
+    <ul class="nav-links">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="hobbies.html">兴趣爱好</a></li>
+      <li><a href="portfolio.html">个人作品</a></li>
+      <li><a href="resume.html" class="active">岗位简历</a></li>
+      <li><a href="contact.html">联系我</a></li>
+    </ul>
+  </nav>
+</div></header>
+
+<main class="rs-wrap">
+  <div class="rs-head">
+    <div>
+      <h1>岗位简历工作台</h1>
+      <p class="rs-sub">按岗位挑选教育、技能与项目 → 冻结内容与模板 → 后台真实渲染 PDF（一页渲染后校验，非字符数估算）</p>
+    </div>
+    <div class="rs-admin">
+      <label>管理密钥 <input id="admin-key" type="password" placeholder="X-Admin-Key" autocomplete="off"></label>
+      <button class="btn-mini" id="save-key">保存</button>
+    </div>
+  </div>
+
+  <div class="rs-grid">
+    <!-- 左：岗位（草稿） -->
+    <section class="rs-card">
+      <div class="rs-card-head">
+        <h2>岗位草稿</h2>
+        <button class="btn-mini primary" id="new-pos">＋ 新建岗位</button>
+      </div>
+      <p class="rs-hint">草稿改动不会影响已生成的简历；历史简历使用冻结时的固定来源，<b>不会自动套用最新项目</b>。</p>
+      <ul id="pos-list" class="rs-list"></ul>
+    </section>
+
+    <!-- 中：编辑器 -->
+    <section class="rs-card" id="editor-card" hidden>
+      <div class="rs-card-head"><h2>编辑岗位</h2><div>
+        <button class="btn-mini" id="reload-pos">放弃本地改动</button>
+      </div></div>
+      <div id="editor"></div>
+      <div class="rs-actions">
+        <button class="btn-mini primary" id="freeze-auto">冻结并自动压缩版式生成</button>
+        <button class="btn-mini warn" id="freeze-manual">冻结并按最小版式生成（我来删减）</button>
+      </div>
+      <p class="rs-hint" id="rev-info"></p>
+    </section>
+
+    <!-- 右：生成物与分享 -->
+    <section class="rs-card">
+      <div class="rs-card-head"><h2>已生成 / 已分享</h2><button class="btn-mini" id="refresh-docs">刷新</button></div>
+      <div class="rs-tabs">
+        <button class="rs-tab active" data-tab="docs">已生成</button>
+        <button class="rs-tab" data-tab="shares">分享链接</button>
+        <button class="rs-tab" data-tab="events">审计事件</button>
+      </div>
+      <ul id="doc-list" class="rs-list"></ul>
+      <ul id="share-list" class="rs-list" hidden></ul>
+      <ul id="event-list" class="rs-list rs-events" hidden></ul>
+    </section>
+  </div>
+
+  <section class="rs-card rs-policy">
+    <h2>版式与分享策略说明</h2>
+    <div class="rs-policy-grid">
+      <div>
+        <h3>一页校验（渲染后，非估算）</h3>
+        <ul>
+          <li>真实 Chromium 排版后逐元素测量：超出 A4 内容区或被 <code>overflow:hidden</code> 裁切即判失败；</li>
+          <li>字体逐字符 <code>document.fonts.check</code> 检测缺字（CJK + Latin 子集），字体下载失败直接阻断导出；</li>
+          <li>解析 PDF 页对象确认恰为 1 页；</li>
+          <li>联系方式检查字号、对比度与完整未裁切。</li>
+        </ul>
+      </div>
+      <div>
+        <h3>自动压缩 vs 提示删减</h3>
+        <ul>
+          <li><b>自动压缩</b>：版式 10.5pt → 10pt → <b>最小 9pt</b>，逐级收紧间距，任一级通过即产出；</li>
+          <li><b>提示删减</b>：9pt 仍溢出时停止压缩，返回溢出报告，由用户删减条目（绝不靠裁字段落凑一页）；</li>
+          <li><b>不可裁切字段</b>：姓名、电话、邮箱永远完整保留，不参与省略或截断；正文最小字号硬底线 9pt。</li>
+        </ul>
+      </div>
+      <div>
+        <h3>分享链接安全边界</h3>
+        <ul>
+          <li><b>受控下载代理（默认，7 天）</b>：每次访问都由服务器验证到期/撤销，<code>no-store</code>，<b>撤销即时生效</b>；</li>
+          <li><b>独立签名直链（≤10 分钟）</b>：HMAC 可离线验证有效期，但<u>有效期内离线持有副本无法保证即时撤销</u>，因此只给短有效期，且允许边缘缓存至到期；</li>
+          <li>已下载到本地的 PDF <b>无法远程收回</b>，敏感简历请使用代理模式并及时撤销。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="js/main.js"></script>
+<script src="js/resume.js"></script>
+</body>
+</html>

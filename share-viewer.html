@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>简历分享 · 灵墨创意</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans SC',system-ui,sans-serif;min-height:100vh;background:radial-gradient(1200px 600px at 20% -10%,#1e293b,#0b1020 60%);color:#e2e8f0;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{width:100%;max-width:560px;background:rgba(30,41,59,.7);border:1px solid rgba(148,163,184,.2);border-radius:18px;padding:30px;backdrop-filter:blur(14px);}
+  h1{font-size:1.4rem;margin-bottom:6px;}
+  .m{color:#94a3b8;font-size:.86rem;line-height:1.7;margin-bottom:18px;}
+  .btn{display:inline-block;margin-top:8px;padding:11px 20px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;text-decoration:none;font-weight:600;}
+  .note{margin-top:16px;font-size:.78rem;line-height:1.65;color:#fcd34d;background:rgba(120,53,15,.2);border:1px solid #92400e;border-radius:10px;padding:10px 12px;}
+  .ok{color:#a7f3d0;}
+  .blocked h1{color:#fca5a5;}
+  iframe{width:100%;height:70vh;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:#fff;margin-top:14px;}
+  code{background:rgba(99,102,241,.2);padding:1px 6px;border-radius:5px;}
+</style>
+</head>
+<body>
+<div class="card" id="app"><div class="m">正在向服务器验证链接的有效期与撤销状态…</div></div>
+<script>
+(async () => {
+  const token = location.pathname.split('/').pop();
+  const app = document.getElementById('app');
+  const blocked = (title, desc) => {
+    app.classList.add('blocked');
+    app.innerHTML = `<h1>${title}</h1><div class="m">${desc}</div>`;
+  };
+  let res;
+  try { res = await fetch(`/p/${token}/meta`, { cache: 'no-store' }); }
+  catch { return blocked('无法验证链接', '网络错误，请稍后重试。'); }
+  if (res.status === 410) {
+    let reason = 'expired';
+    try { reason = (await res.json()).error; } catch {}
+    const map = { revoked: ['链接已撤销', '该分享已被所有者撤销，无法继续访问。'],
+                  expired: ['链接已过期', '该链接已超过有效期，请联系对方重新发送。'],
+                  'document-unavailable': ['内容不可用', '对应的简历当前不可访问。'] };
+    const [t, d] = map[reason] || ['链接不可用', '请联系对方确认。'];
+    return blocked(t, d);
+  }
+  if (!res.ok) return blocked('链接不存在', '分享链接无效或已被删除。');
+  const m = await res.json();
+  const dl = m.mode === 'proxy' ? m.proxyPdfUrl : m.signedUrl;
+  app.innerHTML = `
+    <h1>${m.positionName} 的简历</h1>
+    <div class="m">版本 rev ${m.rev} · 生成于 ${new Date(m.readyAt).toLocaleString('zh-CN')}<br>
+      链接到期：${new Date(m.expiresAt).toLocaleString('zh-CN')} · 模式：${m.mode === 'proxy' ? '受控下载代理' : '独立签名直链'}</div>
+    <a class="btn" href="${dl}" target="_blank" rel="noopener">查看 / 下载 PDF</a>
+    ${m.mode === 'proxy' ? '<iframe src="' + m.proxyPdfUrl + '" title="简历预览"></iframe>' : ''}
+    <div class="note">${m.cacheNote}<br>已下载到本地的 PDF 无法被远程收回；如对方已撤销但你之前保存了副本，该副本仍然存在。</div>`;
+})();
+</script>
+</body>
+</html>
