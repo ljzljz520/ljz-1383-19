@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岗位简历工作流 | 个人主页</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1220; --panel:rgba(255,255,255,.06); --panel-line:rgba(255,255,255,.12);
+  --text:#e8edf6; --muted:#9aa7bd; --accent:#5b9dff; --ok:#3ecf8e; --warn:#ffb020; --bad:#ff6b6b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans SC',system-ui,sans-serif;background:radial-gradient(1200px 700px at 80% -10%,#15233d,transparent),var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.top h1{font-family:'Outfit';font-size:1.7rem;margin:0}
+.token{display:flex;gap:8px;align-items:center}
+input,select,button{font:inherit}
+input[type=text],input[type=email],input[type=tel],select{background:#0e1729;border:1px solid var(--panel-line);color:var(--text);border-radius:10px;padding:9px 11px;width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0}
+button{cursor:pointer;border:1px solid var(--panel-line);background:#16233c;color:var(--text);border-radius:10px;padding:9px 14px;font-weight:600;transition:.15s}
+button:hover{border-color:var(--accent)}
+button.primary{background:linear-gradient(135deg,#3b82f6,#2563eb);border-color:transparent}
+button.ghost{background:transparent}
+button:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+@media(max-width:880px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--panel-line);border-radius:16px;padding:16px 18px;backdrop-filter:blur(12px);margin-bottom:16px}
+.card h2{font-size:1rem;margin:0 0 12px;letter-spacing:.3px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.row > div{flex:1;min-width:160px}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.picker{max-height:260px;overflow:auto;border:1px dashed var(--panel-line);border-radius:12px;padding:8px}
+.src{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:10px}
+.src:hover{background:rgba(255,255,255,.05)}
+.src input{width:auto;margin-top:3px}
+.src .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);font-weight:700}
+.src .t{font-weight:600;font-size:.9rem}
+.src .b{color:var(--muted);font-size:.8rem}
+.priv{color:var(--bad);font-size:.72rem;margin-left:6px}
+.badge{display:inline-block;font-size:.68rem;padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.4px}
+.b-draft{background:rgba(154,167,189,.18);color:#c3cdda}
+.b-generated{background:rgba(62,207,142,.16);color:var(--ok)}
+.b-shared{background:rgba(91,157,255,.18);color:#8fc0ff}
+.b-failed{background:rgba(255,107,107,.18);color:var(--bad)}
+.b-need{background:rgba(255,176,32,.18);color:var(--warn)}
+.pos{border:1px solid var(--panel-line);border-radius:12px;padding:12px;margin-bottom:10px}
+.pos header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pos .jt{font-weight:700}
+.ver{font-size:.78rem;color:var(--muted);margin-top:6px;border-top:1px dashed var(--panel-line);padding-top:6px}
+.ver .line{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0}
+.note{font-size:.78rem;color:var(--muted);line-height:1.6}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#0e1729;border:1px solid var(--panel-line);padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;z-index:50}
+.toast.show{opacity:1}
+.toast.ok{border-color:var(--ok)} .toast.err{border-color:var(--bad)} .toast.warn{border-color:var(--warn)}
+.checks{font-size:.78rem;margin-top:8px;border-radius:10px;padding:8px 10px;background:rgba(0,0,0,.2)}
+.checks ul{margin:4px 0 0;padding-left:18px}
+.suggest{background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.4);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:.8rem}
+.linkbox{word-break:break-all;background:#0a1322;border:1px solid var(--panel-line);border-radius:10px;padding:8px 10px;margin:8px 0;font-size:.76rem}
+.muted{color:var(--muted)}
+.pill{font-size:.7rem;padding:1px 8px;border-radius:999px;border:1px solid var(--panel-line);color:var(--muted);margin-left:6px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+small.hint{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>岗位简历工作流</h1>
+      <div class="note">选择教育 / 技能 / 项目 → 冻结内容与模板 → 后台渲染真实一页 PDF（渲染后检查溢出、缺字与联系方式可读性）</div>
+    </div>
+    <div class="token">
+      <input type="text" id="token" placeholder="Owner Token" style="min-width:200px">
+      <button class="ghost" id="saveToken">保存</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>① 为目标岗位组装内容（字段来自固定来源库）</h2>
+        <div class="row">
+          <div><label>目标岗位 *</label><input type="text" id="jobTitle" placeholder="如：前端 / 交互工程师"></div>
+          <div><label>目标公司</label><input type="text" id="company" placeholder="如：示例科技"></div>
+        </div>
+        <div class="row">
+          <div><label>姓名 *（不可裁切，最小 15pt）</label><input type="text" id="cName"></div>
+          <div><label>邮箱 *（最小 9pt，需可点击）</label><input type="email" id="cEmail"></div>
+        </div>
+        <div class="row">
+          <div><label>电话 *（最小 9pt，需可点击）</label><input type="tel" id="cPhone"></div>
+          <div><label>城市</label><input type="text" id="cLocation"></div>
+          <div><label>网站</label><input type="text" id="cWebsite"></div>
+        </div>
+        <label>勾选教育 / 技能 / 项目（私密作品无法选中）</label>
+        <div class="picker" id="picker"><div class="note">正在加载来源…</div></div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="primary" id="createResume">创建岗位简历（冻结为 v1 草稿）</button>
+          <small class="hint">内容在生成时被冻结；历史简历使用固定来源，不会自动套用最新项目。</small>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>② 我的岗位与版本 <span class="note">（草稿 / 已生成 / 已分享 三态区分）</span></h2>
+        <div id="resumes" class="note">加载中…</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>版式约束</h2>
+        <div class="note">
+          自动压缩只在固定 4 级版式内调整（字号/行距/留白/间距），<b>不会删除或截断任何已选条目</b>。<br><br>
+          最小字号：姓名 15pt · 岗位 10.5pt · 联系方式 9pt · 区块标题 10.5pt · 正文 9pt；最小行距 1.28，最小页边距 9mm。<br><br>
+          不可裁切字段：<code>姓名 / 邮箱 / 电话 / 目标岗位 / 公司</code>。到达下限仍超一页时，系统返回<b>删减建议</b>而不是裁切。
+        </div>
+      </div>
+      <div class="card">
+        <h2>分享与撤回边界</h2>
+        <div class="note">
+          <b>受控代理（默认，可即时撤销）</b>：每次访问回服务器校验到期/撤销，<code>Cache-Control: no-store</code>，撤销/到期立即 410。<br><br>
+          <b>离线签名短链（短有效期）</b>：HMAC 签名可离线验证，<b>有效期内不能声称即时撤销</b>；紧急撤回需轮换服务器密钥（所有签名链同时作废）。仅允许短缓存并 must-revalidate。<br><br>
+          已下载到本地的 PDF <b>无法远程收回</b>。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="js/resume.js"></script>
+</body>
+</html>
